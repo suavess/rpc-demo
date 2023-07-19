@@ -18,11 +18,12 @@ public class RpcInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodName(method.getName());
         rpcRequest.setParameterTypes(method.getParameterTypes());
         rpcRequest.setArgs(args);
-        Socket socket = new Socket("localhost", 8080);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-        objectOutputStream.writeObject(rpcRequest);
-        objectOutputStream.flush();
-        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-        return objectInputStream.readObject();
+        try (Socket socket = new Socket("localhost", 8080);
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());) {
+            objectOutputStream.writeObject(rpcRequest);
+            objectOutputStream.flush();
+            return objectInputStream.readObject();
+        }
     }
 }

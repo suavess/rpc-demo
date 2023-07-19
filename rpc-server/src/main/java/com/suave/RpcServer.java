@@ -21,8 +21,7 @@ public class RpcServer {
             throw new RuntimeException(e);
         }
         while (true) {
-            try {
-                Socket socket = serverSocket.accept();
+            try (Socket socket = serverSocket.accept()) {
                 EXECUTOR.execute(new ProcessorHandler(socket, service));
             } catch (IOException e) {
                 throw new RuntimeException(e);
