@@ -1,10 +1,12 @@
 package com.suave;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import com.alibaba.fastjson2.JSON;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 /**
  * @author Suave
@@ -18,12 +20,16 @@ public class RpcInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodName(method.getName());
         rpcRequest.setParameterTypes(method.getParameterTypes());
         rpcRequest.setArgs(args);
-        try (Socket socket = new Socket("localhost", 8080);
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());) {
-            objectOutputStream.writeObject(rpcRequest);
-            objectOutputStream.flush();
-            return objectInputStream.readObject();
+        try (SocketChannel socketChannel = SocketChannel.open()) {
+            socketChannel.connect(new InetSocketAddress("localhost", 8080));
+            socketChannel.write(ByteBuffer.wrap(JSON.toJSONString(rpcRequest).getBytes()));
+            StringBuilder sb = new StringBuilder();
+            ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
+            socketChannel.read(byteBuffer);
+            byteBuffer.flip();
+            sb.append(new String(byteBuffer.array(), byteBuffer.arrayOffset(), byteBuffer.limit()));
+            byteBuffer.clear();
+            return sb.toString();
         }
     }
 }

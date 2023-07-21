@@ -6,7 +6,7 @@ package com.suave;
  */
 public class HelloServiceImpl implements HelloService {
     @Override
-    public HelloBean sayHello(String content) {
-        return new HelloBean("hello " + content);
+    public String sayHello(String content) {
+        return "Hello " + content;
     }
 }
